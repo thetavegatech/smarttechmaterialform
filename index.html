@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fabrication Material Order</title>
+    <title> Material Order</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -130,61 +130,79 @@
         </div>
 
         <!-- Fabrication Table -->
-        <div id="fabrication-section" style="display: none;">
-            <h3>Fabrication Materials</h3>
-            <table id="fabricationTable">
-                <thead>
-                    <tr>
-                        <th>Material Type</th>
-                        <th>Sub-Type</th>
-                        <th>Size</th>
-                        <th>Quantity</th>
-                        <th>Remark</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="addMaterialRow('fabricationTable')">Add Fabrication Material</button>
-        </div>
+<div id="fabrication-section" style="display: none; margin-bottom: 20px;">
+    <h3 style="color: #333; text-align: left;">Fabrication Materials</h3>
+    
+    <!-- Table Wrapper for Overflow Handling -->
+    <div style="width: 100%; overflow-x: auto; max-height: 300px; border-radius: 8px; 
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); background: white; padding: 10px;">
+        <table id="fabricationTable" style="width: 100%; border-collapse: collapse; white-space: nowrap;">
+            <thead>
+                <tr style="background-color: #007bff; color: rgb(138, 44, 44);">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Material Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Sub-Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Size</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Quantity</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Remark</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <button type="button" onclick="addMaterialRow('fabricationTable')" 
+        style="margin-top: 10px; display: block; width: 100%; padding: 10px; background-color: #28a745; color: white; 
+               border: none; border-radius: 4px; cursor: pointer;">Add Fabrication Material</button>
+</div>
 
-        <!-- Electrical Table -->
-        <div id="electrical-section" style="display: none;">
-            <h3>Electrical Materials</h3>
-            <table id="electricalTable">
-                <thead>
-                    <tr>
-                        <th>Material Type</th>
-                        <th>Sub-Type</th>
-                        <th>Size</th>
-                        <th>Quantity</th>
-                        <th>Remark</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="addMaterialRow('electricalTable')">Add Electrical Material</button>
-        </div>
+<!-- Electrical Table -->
+<div id="electrical-section" style="display: none; margin-bottom: 20px;">
+    <h3 style="color: #333; text-align: left;">Electrical Materials</h3>
+    <div style="width: 100%; overflow-x: auto; max-height: 300px; border-radius: 8px; 
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); background: white; padding: 10px;">
+        <table id="electricalTable" style="width: 100%; border-collapse: collapse; white-space: nowrap;">
+            <thead>
+                <tr style="background-color: #747679; color: rgb(138, 44, 44);">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Material Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Sub-Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Size</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Quantity</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Remark</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <button type="button" onclick="addMaterialRow('electricalTable')" 
+        style="margin-top: 10px; display: block; width: 100%; padding: 10px; background-color: #28a745; color: white; 
+               border: none; border-radius: 4px; cursor: pointer;">Add Electrical Material</button>
+</div>
 
-        <!-- Panels Table -->
-        <div id="panels-section" style="display: none;">
-            <h3>Panels Materials</h3>
-            <table id="panelsTable">
-                <thead>
-                    <tr>
-                        <th>Material Type</th>
-                        <th>Sub-Type</th>
-                        <th>Size</th>
-                        <th>Quantity</th>
-                        <th>Remark</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="addMaterialRow('panelsTable')">Add Panel Material</button>
-        </div>
+<!-- Panels Table -->
+<div id="panels-section" style="display: none; margin-bottom: 20px;">
+    <h3 style="color: #333; text-align: left;">Panels Materials</h3>
+    <div style="width: 100%; overflow-x: auto; max-height: 300px; border-radius: 8px; 
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); background: white; padding: 10px;">
+        <table id="panelsTable" style="width: 100%; border-collapse: collapse; white-space: nowrap;">
+            <thead>
+                <tr style="background-color: #6c757d; color: rgb(138, 44, 44);">
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Material Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Sub-Type</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Size</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Quantity</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Remark</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <button type="button" onclick="addMaterialRow('panelsTable')" 
+        style="margin-top: 10px; display: block; width: 100%; padding: 10px; background-color: #28a745; color: white; 
+               border: none; border-radius: 4px; cursor: pointer;">Add Panel Material</button>
+</div>
+
 
         <button type="button" onclick="submitForm()">Submit</button>
         <button type="button" class="view-orders-btn" onclick="viewOrders()">View Orders</button>
