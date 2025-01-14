@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabrication Material Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+        }
+
+        .remove-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Material Order Forms</h1>
+
+    <h2>Order Details</h2>
+    <form>
+        <label for="Ordered By">Ordered By</label>
+        <input type="text" id="Ordered By" placeholder="Enter Ordered By" required>
+
+        <label for="clientName">Client Name</label>
+        <input type="text" id="clientName" placeholder="Enter Client Name" required>
+
+        <label for="clientAddress">Address</label>
+        <textarea id="clientAddress" placeholder="Enter Address" rows="3" required></textarea>
+
+        <label for="phoneNo">Phone No.</label>
+        <input type="tel" id="phoneNo" placeholder="Enter Phone Number" pattern="[0-9]{10}" required>
+        <div class="btn-group">
+            <button type="button" onclick="selectCategory('fabrication')">Fabrication</button>
+            <button type="button" onclick="selectCategory('electrical')">Electrical</button>
+            <button type="button" onclick="selectCategory('panels')">Panels</button>
+        </div>
+
+        <!-- Fabrication Table -->
+        <div id="fabrication-section" style="display: none;">
+            <h3>Fabrication Materials</h3>
+            <table id="fabricationTable">
+                <thead>
+                    <tr>
+                        <th>Material Type</th>
+                        <th>Sub-Type</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Remark</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" onclick="addMaterialRow('fabricationTable')">Add Fabrication Material</button>
+        </div>
+
+        <!-- Electrical Table -->
+        <div id="electrical-section" style="display: none;">
+            <h3>Electrical Materials</h3>
+            <table id="electricalTable">
+                <thead>
+                    <tr>
+                        <th>Material Type</th>
+                        <th>Sub-Type</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Remark</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" onclick="addMaterialRow('electricalTable')">Add Electrical Material</button>
+        </div>
+
+        <!-- Panels Table -->
+        <div id="panels-section" style="display: none;">
+            <h3>Panels Materials</h3>
+            <table id="panelsTable">
+                <thead>
+                    <tr>
+                        <th>Material Type</th>
+                        <th>Sub-Type</th>
+                        <th>Size</th>
+                        <th>Quantity</th>
+                        <th>Remark</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" onclick="addMaterialRow('panelsTable')">Add Panel Material</button>
+        </div>
+
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+
+
+        const materialTable = document.getElementById('materialTable').querySelector('tbody');
+        document.querySelector('button[type="button"]').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (validateForm()) {
+                submitForm();
+            }
+        });
+        async function submitForm() {
+    if (!selectedCategory) {
+        alert("Please select a category before submitting.");
+        return;
+    }
+
+    const formData = {
+        orderedBy: document.getElementById('Ordered By').value,
+        clientName: document.getElementById('clientName').value,
+        clientAddress: document.getElementById('clientAddress').value,
+        phoneNo: document.getElementById('phoneNo').value,
+        category: selectedCategory, // Pass selected category
+        materials: [
+            ...getMaterialsFromTable('fabricationTable'),
+            ...getMaterialsFromTable('electricalTable'),
+            ...getMaterialsFromTable('panelsTable')
+        ]
+    };
+
+    try {
+        const response = await fetch('http://localhost:5000/api/materials', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(`Data saved successfully! Generating PDF for ${selectedCategory}...`);
+            console.log(formData);
+            generatePDF(formData); // Pass formData with category to PDF
+        } else {
+            console.error(data);
+            alert('Failed to save data: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while saving data.');
+    }
+}
+
+
+
+        async function deleteMaterial(id) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/materials/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Material deleted successfully');
+                    fetchMaterials();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+        async function editMaterial(id) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/materials/${id}`);
+                const material = await response.json();
+
+                document.getElementById('Ordered By').value = material.orderedBy;
+                document.getElementById('clientName').value = material.clientName;
+                document.getElementById('clientAddress').value = material.clientAddress;
+                document.getElementById('phoneNo').value = material.phoneNo;
+
+                // Populate materials in the table (add logic here as needed)
+                document.getElementById('submitButton').onclick = () => updateMaterial(id);
+            } catch (err) {
+                console.error('Error fetching material:', err);
+            }
+        }
+
+        async function updateMaterial(id) {
+            const orderedBy = document.getElementById('Ordered By').value;
+            const clientName = document.getElementById('clientName').value;
+            const clientAddress = document.getElementById('clientAddress').value;
+            const phoneNo = document.getElementById('phoneNo').value;
+
+            const materials = Array.from(document.querySelectorAll('#materialTable tbody tr')).map(row => ({
+                materialType: row.querySelector('.materialType').value,
+                subType: row.querySelector('.subType').value,
+                materialSize: row.querySelector('.materialSize').value,
+                quantity: row.querySelector('.materialQuantity').value,
+                remark: row.querySelector('.materialRemark').value,
+            }));
+
+
+            const requestData = {
+                orderedBy,
+                clientName,
+                clientAddress,
+                phoneNo,
+                materials,
+            };
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/materials/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                });
+
+                if (response.ok) {
+                    alert('Material updated successfully');
+                    fetchMaterials();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+        function selectCategory(category) {
+    selectedCategory = category; // Store selected category
+    console.log("Selected Category:", selectedCategory);
+
+    // Hide/Show Sections Based on Selection
+    document.getElementById('fabrication-section').style.display = (category === 'fabrication') ? 'block' : 'none';
+    document.getElementById('electrical-section').style.display = (category === 'electrical') ? 'block' : 'none';
+    document.getElementById('panels-section').style.display = (category === 'panels') ? 'block' : 'none';
+
+    // Clear and Add New Rows for the Selected Category
+    if (category === 'fabrication') {
+        document.getElementById('fabricationTable').querySelector('tbody').innerHTML = "";
+        addMaterialRow('fabricationTable');
+    } else if (category === 'electrical') {
+        document.getElementById('electricalTable').querySelector('tbody').innerHTML = "";
+        addMaterialRow('electricalTable');
+    } else if (category === 'panels') {
+        document.getElementById('panelsTable').querySelector('tbody').innerHTML = "";
+        addMaterialRow('panelsTable');
+    }
+}
+
+        function addMaterialRow(tableId) {
+            const tableBody = document.getElementById(tableId).querySelector('tbody');
+            const row = document.createElement('tr');
+
+            let materialOptions = "";
+
+            if (tableId === "fabricationTable") {
+                materialOptions = `
+            <select class="materialType" onchange="updateDropdowns(this)" required>
+                <option value="">Select Material</option>
+                <option value="pipe">Pipe</option>
+                <option value="basePlate">Base Plate</option>
+                <option value="anchorFastener">Anchor Fastener</option>
+                <option value="Armet Box">Armet Box</option>
+                <option value="Hole Pass Patti">Hole Pass Patti</option>
+                <option value="2 Bombay Khilla">2" Bombay Khilla</option>
+                <option value="Oil Paint Silver Colour">Oil Paint Silver Colour</option>
+                <option value="Brush">Brush</option>
+                <option value="Thinner">Thinner</option>
+                <option value="Other">Other</option>
+            </select>
+        `;
+            } else if (tableId === "electricalTable") {
+                materialOptions = `
+            <select class="materialType" onchange="updateDropdowns(this)" required>
+                <option value="">Select Material</option>
+                <option value="ACDB">ACDB</option>
+                <option value="DCDB">DCDB</option>
+                <option value="Earthing Rod">Earthing Rod</option>
+                <option value="Lightening Arrestor">Lightening Arrestor</option>
+                <option value="PVC Bucket">PVC Bucket</option>
+                <option value="AC Wire">AC Wire</option>
+                <option value="Earthing Wire">Earthing Wire</option>
+                <option value="Elbow">Elbow</option>
+                <option value="Bend">Bend</option>
+                <option value="T">T</option>
+                <option value="Pipe">Pipe</option>
+                <option value="Saddle">Saddle</option>
+                <option value="Electrical Tape">Electrical Tape</option>
+                <option value="Earthing Powder">Earthing Powder</option>
+                <option value="Lugs">Lugs</option>
+                <option value="Nut Bolt">Nut Bolt</option>
+                <option value="1/4 Tapping Screw">1/4 Tapping Screw</option>
+                <option value="DC Cable Polycab">DC Cable Polycab</option>
+                <option value="45x45 Cable Tray">45x45 Cable Tray</option>
+                <option value="Flexible Pipe">Flexible Pipe</option>
+                <option value="Generation Meter">Generation Meter</option>
+                <option value="MCB">MCB</option>
+                <option value="Plastic Cover">Plastic Cover</option>
+                <option value="Wooden Meter Board">Wooden Meter Board</option>
+            </select>
+        `;
+            } else if (tableId === "panelsTable") {
+                materialOptions = `
+            <select class="materialType" onchange="updateDropdowns(this)" required>
+                <option value="">Select Material</option>
+                <option value="Panel">Panel</option>
+                <option value="Invertor">Invertor</option>
+                <option value="J Hook">J Hook</option>
+                <option value="Z Clamp">Z Clamp</option>
+                <option value="U Clamp">U Clamp</option>
+                <option value="Monorail">Monorail</option>
+                <option value="Earthing Patti">Earthing Patti</option>
+                <option value="Screwing">Screwing</option>
+            </select>
+        `;
+            }
+
+            row.innerHTML = `
+        <td>${materialOptions}</td>
+        <td>
+            <select class="subType" required>
+                <option value="">Select Sub-Type</option>
+            </select>
+        </td>
+        <td>
+            <select class="materialSize" required>
+                <option value="">Select Size</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="materialQuantity" placeholder="Enter Quantity" min="1" required>
+        </td>
+        <td>
+             <input type="text" class="materialRemark" placeholder="Enter Remark">
+        </td>
+        <td>
+            <button type="button" class="remove-btn" onclick="removeMaterialRow(this)">Remove</button>
+        </td>
+    `;
+
+            tableBody.appendChild(row);
+        }
+
+        function updateDropdowns(materialTypeDropdown) {
+            const row = materialTypeDropdown.closest('tr'); // Get the closest table row
+            const subTypeDropdown = row.querySelector('.subType'); // Select the subType dropdown
+            const sizeDropdown = row.querySelector('.materialSize'); // Select the size dropdown
+            const materialType = materialTypeDropdown.value;
+
+            if (!subTypeDropdown || !sizeDropdown) {
+                console.error("Sub-Type or Size dropdown not found.");
+                return;
+            }
+
+            // Reset Sub-Type and Size Dropdowns
+            subTypeDropdown.innerHTML = '<option value="">Select Sub-Type</option>';
+            sizeDropdown.innerHTML = '<option value="">Select Size</option>';
+
+            switch (materialType) {
+                case 'pipe':
+                    subTypeDropdown.innerHTML += `
+                <option value="galvonisedPipe">Galvonised Pipe</option>
+                <option value="msPipe">MS Pipe</option>
+                <option value="Other">Other</option>
+            `;
+                    sizeDropdown.innerHTML += `
+                <option value="50x50x1.6">50x50x1.6</option>
+                <option value="50x50x2">50x50x2</option>
+                <option value="80x40x1.6">80x40x1.6</option>
+                <option value="80x40x2">80x40x2</option>
+                <option value="72x72x1.6">72x72x1.6</option>
+                <option value="72x72x2">72x72x2</option>
+                <option value="50x25x1.6">50x25x1.6</option>
+                <option value="50x25x2">50x25x2</option>
+                <option value="50x25x2 (C Section)">50x25x2 (C Section)</option>
+                <option value="25x25x1.6">25x25x1.6</option>
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'basePlate':
+                    subTypeDropdown.innerHTML += `
+            <option value="squarePlate">Square Plate</option>
+            <option value="Other">Other</option>
+            `;
+                    sizeDropdown.innerHTML += `
+                <option value="4x4">4x4</option>
+                <option value="5x5">5x5</option>
+                <option value="6x6">6x6</option>
+                <option value="8x8">8x8</option>
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'anchorFastener':
+                    subTypeDropdown.innerHTML += `
+            <option value="standard">Standard</option>
+            <option value="Other">Other</option>
+            `;
+                    sizeDropdown.innerHTML += `
+            <option value="12x100">12x100</option>
+            <option value="Other">Other</option>
+            `;
+                    break;
+
+                case '2 Bombay Khilla':
+                    sizeDropdown.innerHTML += `
+                <option value="0.25Kg">0.25Kg</option>
+                <option value="0.5Kg">0.5Kg</option>
+                <option value="1Kg">1Kg</option>
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'Armet Box':
+                    sizeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'Hole Pass Patti':
+                    sizeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'Oil Paint Silver Colour':
+                    sizeDropdown.innerHTML += `
+                <option value="0.5Lit">0.5Lit</option>
+                <option value="1Lit">1Lit</option>
+                <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'Brush':
+                    sizeDropdown.innerHTML += `
+            <option value="25mm">25mm</option>
+            <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'Thinner':
+                    sizeDropdown.innerHTML += `
+            <option value="1Lit">1Lit</option>
+            <option value="Other">Other</option>
+            `;
+                    break;
+
+                case 'ACDB':
+                    subTypeDropdown.innerHTML += `
+                    <option value="Single Phase">Single Phase</option>
+                    <option value="2 Phase">2 Phase</option>
+                    <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'DCDB':
+                    subTypeDropdown.innerHTML += `
+                <option value="1in 1out">1in 1out</option>
+                <option value="2in 2out">2in 2out</option>
+                <option value="3in 3out">3in 3out</option>
+                <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'AC Wire':
+                    subTypeDropdown.innerHTML += `
+                <option value="AC Flexible Copper">AC Flexible Copper</option>
+                <option value="Armor Cable">Armor Cable</option>
+                <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                <option value="4sqmm">4sqmm</option>
+                <option value="6sqmm">6sqmm</option>
+                <option value="2core">2core</option>
+                <option value="4core">4core</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Earthing Wire':
+                    sizeDropdown.innerHTML += `
+                    <option value="4mm Copper Multistand">4mm Copper Multistand</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Elbow':
+                    sizeDropdown.innerHTML += `
+                    <option value="25mm">25mm</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Bend':
+                    sizeDropdown.innerHTML += `
+                    <option value="25mm">25mm</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'T':
+                    sizeDropdown.innerHTML += `
+                    <option value="25mm">25mm</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Pipe':
+                    sizeDropdown.innerHTML += `
+                <option value="25mm">25mm</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Saddle':
+                    sizeDropdown.innerHTML += `
+                <option value="25mm">25mm</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Electrical Tape':
+                    subTypeDropdown.innerHTML += `
+                <option value="Red">Red</option>
+                <option value="Black">Black</option>
+                <option value="Blue">Blue</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Green">Green</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Earthing Powder':
+                    sizeDropdown.innerHTML += `
+                <option value="5Kg bag">5Kg Bag</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Lugs':
+                    sizeDropdown.innerHTML += `
+                <option value="4sqmm">4sqmm</option>
+                <option value="10sqmm">10sqmm</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Nut Bolt':
+                    sizeDropdown.innerHTML += `
+                <option value="8sqmm">8sqmm</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case '1/4" Tapping Tape':
+                    sizeDropdown.innerHTML += `
+                <option value="35x8 Box">35x8 Box</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'DC Cable Polycab':
+                    sizeDropdown.innerHTML += `
+                <option value="4sqmm">4sqmm</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case '45x45 cable tray':
+                    sizeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Flexible Pipe':
+                    sizeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Generation Meter':
+                    subTypeDropdown.innerHTML += `
+                <option value="Single Phase">Single Phase</option>
+                <option value="3Phase">3Phase</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'MCB':
+                    subTypeDropdown.innerHTML += `
+                <option value="2 Pole">2 Pole</option>
+                <option value="4 Pole">4 Pole</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Plastic Cover':
+                    subTypeDropdown.innerHTML += `
+                <option value="2 Pole">2 Pole</option>
+                <option value="4 Pole">4 Pole</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Wooden Meter Bourd':
+                    sizeDropdown.innerHTML += `
+                <option value="8X6">8X6</option>
+                <option value="10X12">10X12</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Panel':
+                    subTypeDropdown.innerHTML += `
+                    <option value="Waree">Waree</option>
+                    <option value="Adani">Adani</option>
+                    <option value="Premiere">Premiere</option>
+                    <option value="Renew">Renew</option>
+                    <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Invertor':
+                    subTypeDropdown.innerHTML += `
+                <option value="Growwatt">Growwatt</option>
+                <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'J Hook':
+                    subTypeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+                `;
+                    sizeDropdown.innerHTML += `
+                <option value="50x50">50x50</option>
+                <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Z Clamp':
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+                case 'U Clamp':
+                    sizeDropdown.innerHTML += `
+                    <option value="Other">Other</option>
+                `;
+                    break;
+                case 'Monorail':
+                    sizeDropdown.innerHTML += `
+                    <option value="100mm">100mm</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Earthing Patti':
+                    sizeDropdown.innerHTML += `
+                    <option value="2x25mm">2x25mm</option>
+                    <option value="Other">Other</option>
+                `;
+                    break;
+
+                case 'Screwing':
+                    sizeDropdown.innerHTML += `
+                <option value="Other">Other</option>
+                `;
+                    break;
+
+
+                default:
+                    break;
+            }
+        }
+
+        function getMaterialsFromTable(tableId) {
+            return [...document.querySelectorAll(`#${tableId} tbody tr`)].map(row => ({
+                materialType: row.querySelector('.materialType')?.value || '',
+                subType: row.querySelector('.subType')?.value || '',
+                size: row.querySelector('.materialSize')?.value || '',
+                quantity: row.querySelector('.materialQuantity')?.value || '',
+                remark: row.querySelector('.materialRemark')?.value || ''
+            }));
+        }
+
+        function removeMaterialRow(button) {
+            const row = button.parentElement.parentElement;
+            row.remove();
+        }
+
+
+
+
+
+
+
+
+
+      function generatePDF(formData) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const categoryTitle = formData.category ? formData.category.toUpperCase() : "MATERIAL";
+
+    // Add PDF Title Dynamically
+    const colPositions = [10, 70, 110, 140, 170]; // Material Type gets more space
+    let yPosition = 25; // Starting Y position
+
+    // Set PDF Title
+    doc.setFontSize(16);
+    doc.setFont("Helvetica", "bold");
+    doc.text(`${formData.category} Material Order`, 105, 10, { align: 'center' });
+
+    // Basic Information
+    doc.setFontSize(12);
+    doc.setFont("Helvetica", "normal");
+
+    const addLabeledText = (label, text) => {
+        doc.setFont("Helvetica", "bold");
+        doc.text(`${label}:`, 10, yPosition);
+        doc.setFont("Helvetica", "normal");
+        doc.text(text, 55, yPosition); // Adjusted for alignment
+        yPosition += 8;
+    };
+
+    addLabeledText("Ordered By", formData.orderedBy);
+    addLabeledText("Client Name", formData.clientName);
+    addLabeledText("Address", formData.clientAddress);
+    addLabeledText("Phone No.", formData.phoneNo);
+    addLabeledText("Category", formData.category);
+
+    yPosition += 10;
+
+    // Table Headers
+    doc.setFont("Helvetica", "bold");
+    doc.text("Material Type", colPositions[0], yPosition);
+    doc.text("Sub-Type", colPositions[1], yPosition);
+    doc.text("Size", colPositions[2], yPosition);
+    doc.text("Quantity", colPositions[3], yPosition);
+    doc.text("Remark", colPositions[4], yPosition);
+    
+    doc.line(10, yPosition + 2, 200, yPosition + 2); // Header Underline
+    yPosition += 10;
+
+    // Table Rows (Without Horizontal Lines)
+    doc.setFont("Helvetica", "normal");
+    formData.materials.forEach(material => {
+        const rowData = [
+            material.materialType || "N/A",
+            material.subType || "N/A",
+            material.size || "N/A",
+            material.quantity ? material.quantity.toString() : "0",
+            material.remark || "N/A"
+        ];
+
+        rowData.forEach((text, colIndex) => {
+            doc.text(text, colPositions[colIndex], yPosition);
+        });
+
+        yPosition += 10; // Increased padding for better readability
+    });
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont("Helvetica", "italic");
+    doc.text("Generated on: " + new Date().toLocaleString(), 10, 280);
+
+    // Generate Filename Based on Category
+    const fileName = `${formData.clientName.replace(/\s+/g, '_')}_${categoryTitle}_Material_Order.pdf`;
+
+    console.log("Saving PDF as:", fileName);
+    doc.save(fileName);
+}
+
+
+        let allOrders = [];
+
+        window.onload = async () => {
+            await fetchOrders();
+        };
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch('http://localhost:3000/get-orders');
+                const data = await response.json();
+                allOrders = data;
+                displayClientList();
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        }
+
+        document.getElementById('materialOrderForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Collect form data
+            const formData = {
+                orderedBy: document.getElementById('orderedBy').value,
+                clientName: document.getElementById('clientName').value,
+                clientAddress: document.getElementById('clientAddress').value,
+                phoneNo: document.getElementById('phoneNo').value,
+                materials: []
+            };
+
+            // Collect material details
+            const materials = document.querySelectorAll('#materials .materialType');
+            materials.forEach((material, index) => {
+                formData.materials.push({
+                    materialType: material.value,
+                    subType: document.querySelectorAll('#materials .subType')[index].value,
+                    size: document.querySelectorAll('#materials .size')[index].value,
+                    quantity: document.querySelectorAll('#materials .quantity')[index].value,
+                    remark: document.querySelectorAll('#materials .remark')[index].value
+                });
+            });
+
+            // Save data to the backend
+            await saveOrder(formData);
+
+            // Clear form fields after submission
+            document.getElementById('materialOrderForm').reset();
+
+            // Fetch and display updated order list
+            await fetchOrders();
+        });
+
+        async function saveOrder(orderData) {
+            try {
+                const response = await fetch('http://localhost:5000/submit-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await response.json();
+                console.log(data.message);
+            } catch (error) {
+                console.error("Error saving order:", error);
+            }
+        }
+
+        function displayClientList() {
+            const clientListDiv = document.getElementById('clientList');
+            clientListDiv.innerHTML = '';
+
+            allOrders.forEach((order, index) => {
+                const clientDiv = document.createElement('div');
+                clientDiv.innerHTML = `
+                    <strong>${order.clientName}</strong> - 
+                    <button onclick="viewOrder(${index})">View</button>
+                `;
+                clientListDiv.appendChild(clientDiv);
+            });
+        }
+
+        function viewOrder(index) {
+            const order = allOrders[index];
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add basic information
+            doc.setFontSize(14);
+            doc.text('Fabrication Material Order', 10, 10);
+            doc.setFontSize(12);
+            doc.text(`Ordered By: ${order.orderedBy}`, 10, 20);
+            doc.text(`Client Name: ${order.clientName}`, 10, 30);
+            doc.text(`Address: ${order.clientAddress}`, 10, 40);
+            doc.text(`Phone No.: ${order.phoneNo}`, 10, 50);
+
+            // Add table headers
+            const startY = 60;
+            const headers = ['Material Type', 'Sub-Type', 'Size', 'Quantity', 'Remark'];
+            const columnWidths = [40, 40, 40, 30, 40];
+            headers.forEach((header, index) => {
+                doc.text(header, 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0), startY);
+            });
+
+            // Add table rows
+            order.materials.forEach((material, index) => {
+                const y = startY + (index + 1) * 10;
+                const rowData = [material.materialType, material.subType, material.size, material.quantity.toString(), material.remark];
+
+                rowData.forEach((data, idx) => {
+                    doc.text(data, 10 + columnWidths.slice(0, idx).reduce((a, b) => a + b, 0), y);
+                });
+            });
+
+            // Display the PDF
+            doc.output('dataurlnewwindow');
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+</body>
+
+</html>

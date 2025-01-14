@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #loading {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .clickable {
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .clickable:hover {
+            color: darkblue;
+        }
+
+        .nested-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f9f9f9;
+        }
+
+        .nested-table th, .nested-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        .nested-table th {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .back-button {
+            margin: 20px;
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #c82333;
+        }
+
+        #clientList, #orderDetails {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Material Orders</h1>
+    <p id="loading">Fetching data...</p>
+
+    <!-- Client List Section -->
+    <div id="clientList">
+        <h2>Client List</h2>
+        <table id="clientTable">
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Ordered By</th>
+                    <th>Total Orders</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Client List Data Here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Order Details Section -->
+    <div id="orderDetails">
+        <h1>Orders for <span id="clientName"></span></h1>
+        <button class="back-button" onclick="showClientList()">Back to Clients</button>
+
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Ordered By</th>
+                    <th>Client Name</th>
+                    <th>Address</th>
+                    <th>Phone No.</th>
+                    <th>Order Date</th>
+                    <th>Materials</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Order Data Here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiUrl = "http://localhost:5000/api/materials"; // API Endpoint
+        let allOrders = [];
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+                allOrders = await response.json();
+                displayClientList();
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+                document.getElementById("loading").innerHTML = "<span class='error'>Failed to load data. Please try again.</span>";
+            }
+        }
+
+        function displayClientList() {
+            document.getElementById("clientList").style.display = "block";
+            document.getElementById("orderDetails").style.display = "none";
+
+            const tableBody = document.querySelector("#clientTable tbody");
+            tableBody.innerHTML = "";
+
+            if (allOrders.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='3'>No clients found.</td></tr>";
+                return;
+            }
+
+            const clientMap = new Map();
+
+            allOrders.forEach(order => {
+                if (!clientMap.has(order.clientName)) {
+                    clientMap.set(order.clientName, { count: 1, orderedBy: order.orderedBy });
+                } else {
+                    clientMap.get(order.clientName).count++;
+                }
+            });
+
+            clientMap.forEach((data, clientName) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="clickable" onclick="showClientOrders('${clientName}')">${clientName}</td>
+                    <td>${data.orderedBy || "N/A"}</td>
+                    <td>${data.count}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("loading").style.display = "none";
+        }
+
+        function showClientOrders(clientName) {
+            document.getElementById("clientList").style.display = "none";
+            document.getElementById("orderDetails").style.display = "block";
+            document.getElementById("clientName").textContent = clientName;
+
+            const tableBody = document.querySelector("#orderTable tbody");
+            tableBody.innerHTML = "";
+
+            const clientOrders = allOrders.filter(order => order.clientName === clientName);
+
+            clientOrders.forEach(order => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${order.orderedBy || "N/A"}</td>
+                    <td>${order.clientName || "N/A"}</td>
+                    <td>${order.clientAddress || "N/A"}</td>
+                    <td>${order.phoneNo || "N/A"}</td>
+                    <td>${formatDate(order.createdAt) || "N/A"}</td>
+                    <td>${generateMaterialsTable(order.materials)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function generateMaterialsTable(materials) {
+            if (!materials || materials.length === 0) {
+                return "<p>No materials</p>";
+            }
+
+            let tableHTML = `
+                <table class="nested-table">
+                    <thead>
+                        <tr>
+                            <th>Material Type</th>
+                            <th>Sub-Type</th>
+                            <th>Size</th>
+                            <th>Quantity</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            materials.forEach(material => {
+                tableHTML += `
+                    <tr>
+                        <td>${material.materialType || "N/A"}</td>
+                        <td>${material.subType || "N/A"}</td>
+                        <td>${material.size || "N/A"}</td>
+                        <td>${material.quantity || "N/A"}</td>
+                        <td>${material.remark || "N/A"}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            return tableHTML;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString(); // Returns DD/MM/YYYY format
+        }
+
+        function showClientList() {
+            document.getElementById("clientList").style.display = "block";
+            document.getElementById("orderDetails").style.display = "none";
+        }
+
+        fetchOrders();
+    </script>
+
+</body>
+</html>
