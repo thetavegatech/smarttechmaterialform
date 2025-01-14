@@ -187,6 +187,7 @@
         </div>
 
         <button type="button" onclick="submitForm()">Submit</button>
+        <button type="button" class="view-orders-btn" onclick="viewOrders()">View Orders</button>
     </form>
 
 
@@ -984,6 +985,10 @@
             // Display the PDF
             doc.output('dataurlnewwindow');
         }
+        function viewOrders() {
+            window.open('table.html', '_blank'); // Opens the orders list in a new tab
+        }
+        
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
